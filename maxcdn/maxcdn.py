@@ -1,3 +1,4 @@
+import logging
 from requests_oauthlib import OAuth1Session as OAuth1
 from os import environ as env
 
@@ -7,6 +8,9 @@ except ImportError: # handly python 3.x
     from urllib import parse as urlparse
 
 class MaxCDN(object):
+
+    logger = logging.getLogger(__name__)
+
     def __init__(self, alias, key, secret, server="rws.maxcdn.com", **kwargs):
         self.url    = "https://%s/%s" % (server, alias)
         self.client = OAuth1(key, client_secret=secret, **kwargs)
@@ -30,14 +34,16 @@ class MaxCDN(object):
                 params = urlparse.parse_qs(params)
             data = params
 
+        self.logger.debug('Requesting %s', self_get_url(end_point))
         return getattr(self.client, method)(self._get_url(end_point),
                 data=data, headers=self._get_headers(json=True),
-                **kwargs).json()
+                **kwargs)
 
     def get(self, end_point, **kwargs):
+        self.logger.debug('Requesting %s', self._get_url(end_point))
         return self.client.get(self._get_url(end_point),
                 headers=self._get_headers(json=False),
-                **kwargs).json()
+                **kwargs)
 
     def patch(self, end_point, data=None, **kwargs):
         return self._data_request("post", end_point, data=data, **kwargs)
