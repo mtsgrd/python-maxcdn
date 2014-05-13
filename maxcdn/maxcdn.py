@@ -25,7 +25,16 @@ class MaxCDN(object):
 
 
     def _make_request(self, method, *args, **kwargs):
+        retries = self.max_retries
         while retries > 0:
+            response = method(*args, **kwargs)
+            if response.status_code in (200, 204, 304):
+                return response
+            else:
+                self.logger.info('Request failed, retrying. Status: %s, Text: %s',
+                        response.status_code, response.text)
+                retries -= 1
+        raise Exception('All requests failed.')
 
     def _get_headers(self, json=True):
         headers = { "User-Agent": "Python MaxCDN API Client" }
