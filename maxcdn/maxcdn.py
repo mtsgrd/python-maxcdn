@@ -1,3 +1,4 @@
+import time
 import logging
 from requests_oauthlib import OAuth1Session as OAuth1
 from os import environ as env
@@ -34,6 +35,7 @@ class MaxCDN(object):
                 self.logger.info('Request failed, retrying. Status: %s, Text: %s',
                         response.status_code, response.text)
                 retries -= 1
+                time.sleep(5)
         raise Exception('All requests failed.')
 
     def _get_headers(self, json=True):
